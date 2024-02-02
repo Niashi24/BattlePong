@@ -1,6 +1,7 @@
 using System;
 using System.Collections;
 using System.Collections.Generic;
+using System.Linq;
 using SaturnRPG.Utilities.Extensions;
 using UnityEngine;
 using UnityEngine.Serialization;
@@ -13,16 +14,10 @@ public class BallScript : MonoBehaviour
 
     [field: SerializeField]
     public float SpeedMultiplier { get; private set; } = 1.5f;
-    //
-    // [SerializeField]
-    // private Rigidbody2D rbdy2D;
 
     [SerializeField]
     private float ballRadius = 0.5f;
     public float BallRadius => ballRadius;
-    //
-    // [SerializeField]
-    // private CircleCollider2D circleCollider;
 
     [SerializeField]
     private LayerMask layerMask;
@@ -35,6 +30,8 @@ public class BallScript : MonoBehaviour
     public Color Color => ballColor.Color;
 
     public Vector2 Direction { get; private set; } = Vector2.zero;
+    public event Action<Vector2> OnDirectionChange;
+    
     public float Speed { get; private set; } = 0f;
 
     private Transform _transform;
@@ -63,24 +60,27 @@ public class BallScript : MonoBehaviour
         CurrentMultiplier = Mathf.Max(0, multiplier);
         float speed = GetSpeed();
         Speed = speed;
-        // rbdy2D.velocity = rbdy2D.velocity.WithMagnitude(GetSpeed());
         ballColor.OnChangeMultiplier(CurrentMultiplier);
     }
 
     private void FixedUpdate()
     {
-        // Physics2D.CircleCast(transform.position, circleCollider.radius, Direction);
-        // var hit = Physics2D.CircleCast(_transform.position, ballRadius, Direction, Speed * Time.deltaTime, layerMask);
-        // if (hit)
-        // {
-        //     // Direction = Direction.Reflect(hit.normal);
-        //     SetDirection(Direction.Reflect(hit.normal));
-        //     Debug.Log("here");
-        // }
-        // _transform.Translate(Speed * Time.deltaTime * Direction);
 
-        (_transform.position, Direction) = Move(Time.deltaTime * Speed, _transform.position, Direction);
-        // rbdy2D.MovePosition(rbdy2D.position + Direction * (Speed * Time.deltaTime));
+        var iterator = this.ToCircleCastEnumerable();
+
+        var ((pos, vel, hit), trigger) = iterator
+            .Select(x => (x, x.Item3.collider?.GetComponent<IBallTrigger>()))
+            .FirstWhereOrLastOrDefault(x => x.Item2 != null, 
+                ((_transform.position, Direction, new RaycastHit2D()), null));
+
+        Vector2 prevDirection = Direction;
+
+        if (trigger != null)
+            (_transform.position, Direction) = trigger.HitBall(this, hit, pos, vel);
+        else
+            (_transform.position, Direction) = (pos, vel);
+        
+        if (prevDirection != Direction) OnDirectionChange?.Invoke(Direction);
     }
 
     private (Vector2, Vector2) Move(float distance, Vector2 position, Vector2 direction)
@@ -128,34 +128,6 @@ public class BallScript : MonoBehaviour
         return (position, direction);
     }
 
-    private void MoveRecursive(float distance, ref Vector2 position, ref Vector2 direction)
-    {
-        while (true)
-        {
-            if (distance <= 0) return;
-
-            var hit = Physics2D.CircleCast(position, ballRadius, Direction, distance, layerMask);
-            if (hit)
-            {
-                float traveled = Vector2.Distance(position, hit.centroid);
-                position = hit.centroid;
-                direction = direction.Reflect(hit.normal);
-
-                if (hit.collider.CompareTag("Player"))
-                {
-                    // Do paddle stuff
-
-                    return;
-                }
-
-                distance = distance - traveled;
-                continue;
-            }
-
-            break;
-        }
-    }
-
     private float GetSpeed() => BaseSpeed * Mathf.Pow(SpeedMultiplier, CurrentMultiplier);
 
     public void AddMultiplier(float multiplier)
@@ -167,6 +139,7 @@ public class BallScript : MonoBehaviour
     {
         // rbdy2D.velocity = dir.WithMagnitude(GetSpeed());
         Direction = dir;
+        OnDirectionChange?.Invoke(Direction);
     }
 
     private void OnCollisionEnter2D(Collision2D col)
@@ -176,13 +149,35 @@ public class BallScript : MonoBehaviour
 
     public void ResetBall()
     {
-        transform.position = Vector3.zero;
+        transform.localPosition = Vector3.zero;
         SetMultiplier(0);
     }
 
     public void StartRandom()
     {
         SetDirection(Random.value > 0.5f ? Vector2.up : Vector2.down);
+    }
+
+    public CircleCastEnumerable ToCircleCastEnumerable()
+    {
+        return new CircleCastEnumerable(
+            _transform.position,
+            Direction,
+            layerMask,
+            ballRadius,
+            Time.deltaTime * Speed
+        );
+    }
+
+    public CircleBounceEnumerable ToCircleBounceEnumerable()
+    {
+        return new CircleBounceEnumerable(
+            _transform.position,
+            Direction,
+            layerMask,
+            ballRadius,
+            float.PositiveInfinity
+        );
     }
 
     private void OnDrawGizmosSelected()

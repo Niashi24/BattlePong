@@ -2,6 +2,8 @@
 using System.Collections;
 using System.Collections.Generic;
 using System.Diagnostics.CodeAnalysis;
+using UnityEngine;
+using Random = System.Random;
 
 namespace SaturnRPG.Utilities.Extensions
 {
@@ -130,6 +132,60 @@ namespace SaturnRPG.Utilities.Extensions
 
 			first = default;
 			return false;
+		}
+
+		/// <summary>
+		/// Gets the first item in the enumerable that passes the predicate.
+		/// If no such item exists, it gets the last item in the enumerable.
+		/// If the enumerable is empty, it returns the default value for the type.
+		/// </summary>
+		/// <param name="enumerable">The enumerable to search through</param>
+		/// <param name="predicate">The predicate function. Should return 'true' if it passes the search query.</param>
+		/// <typeparam name="T">The type of the item in the enumerable</typeparam>
+		/// <returns>
+		/// If there are no items in the enumerable it returns the default value for the type.
+		/// If there are no items that pass the predicate, it returns the last item.
+		/// Otherwise, it returns the first item that passes the predicate.
+		/// </returns>
+		public static T FirstWhereOrLast<T>(this IEnumerable<T> enumerable, [NotNull] Func<T, bool> predicate)
+		{
+			T prev = default;
+			foreach (var item in enumerable)
+			{
+				if (predicate(item)) return item;
+				prev = item;
+			}
+
+			return prev;
+		}
+
+		/// <summary>
+		/// Gets the first item in the enumerable that passes the predicate.
+		/// If no such item exists, it gets the last item in the enumerable.
+		/// If the enumerable is empty, it returns the given default value.
+		/// </summary>
+		/// <param name="enumerable">The enumerable to search through</param>
+		/// <param name="predicate">The predicate function. Should return 'true' if it passes the search query.</param>
+		/// <typeparam name="T">The type of the item in the enumerable</typeparam>
+		/// <returns>
+		/// If there are no items in the enumerable it returns the given default value.
+		/// If there are no items that pass the predicate, it returns the last item.
+		/// Otherwise, it returns the first item that passes the predicate.
+		/// </returns>
+		public static T FirstWhereOrLastOrDefault<T>(this IEnumerable<T> enumerable, [NotNull] Func<T, bool> predicate, T _default)
+		{
+			T prev = default;
+			bool any = false;
+			foreach (var item in enumerable)
+			{
+				if (predicate(item)) return item;
+				any = true;
+				prev = item;
+			}
+			
+			if (any)
+				return prev;
+			return _default;
 		}
 
 		public static void ForEach<T>(this IEnumerable<T> enumerable, [NotNull] Action<T> action)

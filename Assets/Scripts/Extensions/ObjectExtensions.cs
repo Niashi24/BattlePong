@@ -10,5 +10,11 @@ namespace SaturnRPG.Utilities.Extensions
 			Debug.Log(obj);
 			return obj;
 		}
+
+		public static T Log<T>(this T obj, Object context)
+		{
+			Debug.Log(obj, context);
+			return obj;
+		}
 	}
 }

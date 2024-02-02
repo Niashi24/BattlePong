@@ -209,6 +209,12 @@ namespace SaturnRPG.Utilities.Extensions
 			return Mathf.Sign(value);
 		}
 
+		public static float SignAlmost0(this float value, float epsilon = 0.001f)
+		{
+			if (Mathf.Abs(value) < epsilon) return 0f;
+			return Mathf.Sign(value);
+		}
+
 		public static float IncreaseAbs(this float value, float increase, float maxAbs = Mathf.Infinity)
 		{
 			return value.Sign0() * Mathf.Clamp(Mathf.Abs(value) + increase, 0, maxAbs);
