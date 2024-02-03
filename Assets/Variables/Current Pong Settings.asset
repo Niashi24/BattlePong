@@ -13,4 +13,4 @@ MonoBehaviour:
   m_Name: Current Pong Settings
   m_EditorClassIdentifier: 
   <OvertimeTime>k__BackingField: 60
-  <FirstToN>k__BackingField: 7
+  <FirstToN>k__BackingField: 5

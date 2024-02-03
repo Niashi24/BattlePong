@@ -4,6 +4,7 @@ using System.Linq;
 using Freya;
 using SaturnRPG.Utilities.Extensions;
 using UnityEngine;
+using Random = UnityEngine.Random;
 using Ray2D = Freya.Ray2D;
 
 public class AIPaddleInput : PaddleInput
@@ -16,6 +17,15 @@ public class AIPaddleInput : PaddleInput
 
     [SerializeField]
     private int bounceLookAhead = 1;
+
+    [SerializeField]
+    private float chanceToUseSpecial = 0.25f;
+
+    [SerializeField]
+    private float targetVariance = 0.2f;
+
+    [SerializeField]
+    private float speed = 1f;
 
     private Transform _ballTransform;
     private Transform _paddleTransform;
@@ -31,10 +41,10 @@ public class AIPaddleInput : PaddleInput
             if (_reachedTarget) return 0f;
 
             float dx = (_targetX - _paddleTransform.localPosition.x);
-            if (Mathf.Abs(dx) < 0.01f)
+            if (Mathf.Abs(dx) < 0.1f)
                 _reachedTarget = true;
 
-            return dx.Sign0().Log(this) * -Mathf.Cos(_paddleTransform.eulerAngles.z * Mathf.Deg2Rad).Log(this);
+            return dx.Sign0() * _paddleTransform.right.x * speed; //* -Mathf.Cos(_paddleTransform.eulerAngles.z * Mathf.Deg2Rad);
         }
     }
 
@@ -66,39 +76,55 @@ public class AIPaddleInput : PaddleInput
         }
         else
         {
-            _targetX = calcTargetX().Log();
+            _targetX = calcTargetX() * _paddleTransform.right.x;
+            _targetX += Random.Range(-targetVariance, targetVariance);
             _reachedTarget = false;
-            _special = true;
+            _special = ShouldUseSpecial();
         }
         
         // Debug.Log($"{_xDir} {_special}");
     }
 
+    private bool ShouldUseSpecial()
+    {
+        if (paddle.Charge >= 2f) return true;
+        if (ball.CurrentMultiplier > 0f) return true;
+        return Random.value < chanceToUseSpecial;
+    }
+
     private float calcTargetX()
     {
-        var ray = new Line2D(_paddleTransform.position, _paddleTransform.right);
-        float target = _paddleTransform.localPosition.x;
+        return calcTargetXLocal() * _paddleTransform.right.x;
+        // float targetX = 
+    }
+
+    private float calcTargetXLocal()
+    {
+        var line = new Line2D(_paddleTransform.position, _paddleTransform.right);
         int i = 0;
         foreach (var (start, end) in ball.ToCircleBounceEnumerable())
         {
             
             var segment = new LineSegment2D(start, end);
-            Debug.DrawLine(start, end, Color.green, Time.deltaTime);
-            if (IntersectionTest.LinearIntersectionPoint(ray, segment, out var point))
+            Debug.DrawLine(start, end, Color.green, 0.5f);
+            if (IntersectionTest.LinearIntersectionPoint(line, segment, out var point))
             {
-                return _paddleTransform.InverseTransformPoint(point).x - _paddleTransform.localPosition.x;
+                ObjectExtensions.DebugCircle(point, 1, Color.red, 0.5f);
+                return point.x;
+                // return _paddleTransform.InverseTransformPoint(point).x;
             }
             else if (i + 1 == bounceLookAhead)
             {
-                point = _paddleTransform.rotation * ((Vector3)end - _paddleTransform.position);
-                return _paddleTransform.InverseTransformPoint(point).x - _paddleTransform.localPosition.x;
+                point = end;
+                ObjectExtensions.DebugCircle(point, 1, Color.green, 0.5f);
+                return point.x;
             }
 
             i++;
             if (i >= bounceLookAhead) break;
         }
 
-        return target;
+        return line.origin.x;
     }
 
 }

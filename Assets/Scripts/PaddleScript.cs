@@ -9,6 +9,7 @@ using Random = UnityEngine.Random;
 
 public class PaddleScript : MonoBehaviour, IBallTrigger
 {
+    [Header("Components")]
     [SerializeField]
     private PaddleInput paddleInput;
 
@@ -19,38 +20,44 @@ public class PaddleScript : MonoBehaviour, IBallTrigger
     private Collider2D coll2D;
 
     [SerializeField]
+    private ParticleSystem chargeSystem;
+
+    [SerializeField]
+    private ParticleSystem chargeHitSystem;
+    
+    [Header("Paddle Parameters")]
+    [SerializeField]
     private float moveSpeed = 120f;
 
+    [Header("Ball Interaction Parameters")]
     [SerializeField]
     private FloatReference speedIncrease = new FloatReference(1);
 
     [SerializeField]
     private FloatReference speedDecrease = new FloatReference(-1);
-
-    [SerializeField]
-    private AnimationCurve bounceAngleCurve;
-
-    [field: SerializeField]
-    public float Charge { get; private set; }
-
-    public event Action<float> OnChargeChange;
-    public event Action<bool> OnReadyFireChange;
     
-    public bool ReadyToFire { get; private set; }
+    [SerializeField]
+    private FloatReference baseChargeIncrease = new FloatReference(0.25f);
+    
+    [SerializeField]
+    private FloatReference baseChargeReceieveIncrease = new FloatReference(0.5f);
 
     [field: SerializeField]
     private FloatReference maxCharges = new FloatReference(3);
 
     [field: SerializeField]
     private FloatReference chargeMultiplier = new FloatReference(1);
+    
+    [SerializeField]
+    private AnimationCurve bounceAngleCurve;
+
+    public float Charge { get; private set; }
+    public bool ReadyToFire { get; private set; }
+
+    public event Action<float> OnChargeChange;
+    public event Action<bool> OnReadyFireChange;
 
     private Transform _transform;
-
-    [SerializeField]
-    private ParticleSystem chargeSystem;
-
-    [SerializeField]
-    private ParticleSystem chargeHitSystem;
 
     // Start is called before the first frame update
     void Awake()
@@ -92,8 +99,12 @@ public class PaddleScript : MonoBehaviour, IBallTrigger
         }
         else
         {
+            Charge = (Charge
+                      + baseChargeIncrease * chargeMultiplier
+                      + baseChargeReceieveIncrease * ballScript.CurrentMultiplier)
+                .AtMost(maxCharges.Value);
+            
             ballScript.AddMultiplier(speedDecrease.Value);
-            Charge = Mathf.Min(maxCharges.Value, Charge + 0.25f * chargeMultiplier.Value);
         }
         
         // Place ball at top of paddle

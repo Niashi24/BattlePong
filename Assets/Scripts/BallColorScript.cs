@@ -1,5 +1,7 @@
 using System.Collections;
 using System.Collections.Generic;
+using Freya;
+using SaturnRPG.Utilities.Extensions;
 using UnityEngine;
 
 public class BallColorScript : MonoBehaviour
@@ -33,13 +35,29 @@ public class BallColorScript : MonoBehaviour
         trailRenderer.startColor = trailRenderer.endColor = Color = GetColor(multiplier);
     }
 
+    // private Color GetColor(float multiplier)
+    // {
+    //     Color color = defaultColor;
+    //     foreach (var colorT in colorBySpeedMultiplier)
+    //         if (multiplier >= colorT.t)
+    //             color = colorT.color;
+    //     
+    //     return color;
+    // }
+
     private Color GetColor(float multiplier)
     {
-        Color color = defaultColor;
-        foreach (var colorT in colorBySpeedMultiplier)
-            if (multiplier >= colorT.t)
-                color = colorT.color;
-        
-        return color;
+        if (colorBySpeedMultiplier.Length == 0) return defaultColor;
+
+        var i = colorBySpeedMultiplier.LastIndexWhere((x) => multiplier >= x.t);
+        var ipp = (i + 1).AtMost(colorBySpeedMultiplier.Length - 1);
+
+        if (i == ipp) return colorBySpeedMultiplier[i].color;
+
+        return Color.Lerp(
+            colorBySpeedMultiplier[i].color,
+            colorBySpeedMultiplier[ipp].color,
+            Mathf.InverseLerp(colorBySpeedMultiplier[i].t, colorBySpeedMultiplier[ipp].t, multiplier)
+        );
     }
 }

@@ -13,6 +13,9 @@ namespace BattlePong
         [SerializeField]
         private Image screenFade;
 
+        [SerializeField]
+        private string sceneName = "PVPBattle";
+
         private bool _loading = false;
         
         public void StartGame()
@@ -25,7 +28,7 @@ namespace BattlePong
         {
             _loading = true;
             await screenFade.DOFade(1, 1);
-            await SceneManager.LoadSceneAsync("BattleScene");
+            await SceneManager.LoadSceneAsync(sceneName);
             _loading = false;
         }
     }

@@ -9,6 +9,9 @@ EditorBuildSettings:
     path: Assets/Scenes/TitleScene.unity
     guid: 36304161e449674489fd2e29f3f9ee47
   - enabled: 1
-    path: Assets/Scenes/BattleScene.unity
+    path: Assets/Scenes/PVPBattle.unity
     guid: 2cda990e2423bbf4892e6590ba056729
+  - enabled: 1
+    path: Assets/Scenes/CPUBattle.unity
+    guid: 9c2c55d7166d0704bb239ef187df574a
   m_configObjects: {}

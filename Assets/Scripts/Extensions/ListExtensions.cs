@@ -85,10 +85,26 @@ namespace SaturnRPG.Utilities.Extensions
 		/// <param name="list">The list to search through.</param>
 		/// <param name="predicate">The predicate function. Should return 'true' if it passes the search query.</param>
 		/// <typeparam name="T">The type of the items in the list.</typeparam>
-		/// <returns>The index of the first item that passes the predicate.</returns>
+		/// <returns>The index of the first item that passes the predicate. Returns -1 if none pass.</returns>
 		public static int FirstIndexWhere<T>(this IList<T> list, [NotNull] Func<T, bool> predicate)
 		{
 			for (int i = 0; i < list.Count; i++)
+				if (predicate(list[i]))
+					return i;
+
+			return -1;
+		}
+
+		/// <summary>
+		/// Returns the index of the last item that passes the predicate.
+		/// </summary>
+		/// <param name="list">The list to search through.</param>
+		/// <param name="predicate">The predicate function. Should return 'true' if it passes the search query.</param>
+		/// <typeparam name="T">The type of the items in the list.</typeparam>
+		/// <returns>The index of the last item that passes the predicate. Returns -1 if none pass.</returns>
+		public static int LastIndexWhere<T>(this IList<T> list, [NotNull] Func<T, bool> predicate)
+		{
+			for (int i = list.Count - 1; i >= 0; i--)
 				if (predicate(list[i]))
 					return i;
 
