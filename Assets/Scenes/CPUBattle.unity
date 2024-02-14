@@ -171,6 +171,14 @@ PrefabInstance:
       propertyPath: m_LocalAABB.m_Extent.y
       value: 1.026001
       objectReference: {fileID: 0}
+    - target: {fileID: 4286198285120056941, guid: 53fa60937b8979147aaa9af5c334a21a, type: 3}
+      propertyPath: m_Creator
+      value: 
+      objectReference: {fileID: 0}
+    - target: {fileID: 4537445958012231277, guid: 53fa60937b8979147aaa9af5c334a21a, type: 3}
+      propertyPath: m_Creator
+      value: 
+      objectReference: {fileID: 0}
     - target: {fileID: 8341371306928636466, guid: 53fa60937b8979147aaa9af5c334a21a, type: 3}
       propertyPath: m_Name
       value: Controls 2
@@ -181,7 +189,7 @@ PrefabInstance:
       objectReference: {fileID: 0}
     - target: {fileID: 8341371306928636467, guid: 53fa60937b8979147aaa9af5c334a21a, type: 3}
       propertyPath: m_LocalPosition.x
-      value: 0.25
+      value: 0
       objectReference: {fileID: 0}
     - target: {fileID: 8341371306928636467, guid: 53fa60937b8979147aaa9af5c334a21a, type: 3}
       propertyPath: m_LocalPosition.y
@@ -219,8 +227,14 @@ PrefabInstance:
       propertyPath: m_LocalEulerAnglesHint.z
       value: 180
       objectReference: {fileID: 0}
+    - target: {fileID: 8521123500538665304, guid: 53fa60937b8979147aaa9af5c334a21a, type: 3}
+      propertyPath: m_LocalPosition.x
+      value: 0
+      objectReference: {fileID: 0}
     m_RemovedComponents: []
-    m_RemovedGameObjects: []
+    m_RemovedGameObjects:
+    - {fileID: 8341371306949496764, guid: 53fa60937b8979147aaa9af5c334a21a, type: 3}
+    - {fileID: 8521123499953995708, guid: 53fa60937b8979147aaa9af5c334a21a, type: 3}
     m_AddedGameObjects: []
     m_AddedComponents: []
   m_SourcePrefab: {fileID: 100100000, guid: 53fa60937b8979147aaa9af5c334a21a, type: 3}

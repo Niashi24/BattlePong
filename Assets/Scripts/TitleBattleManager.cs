@@ -3,7 +3,9 @@ using System;
 using System.Threading;
 using Cysharp.Threading.Tasks;
 using DG.Tweening;
+using Freya;
 using UnityEngine;
+using UnityEngine.UI;
 using Random = UnityEngine.Random;
 
 public class TitleBattleManager: MonoBehaviour
@@ -23,11 +25,15 @@ public class TitleBattleManager: MonoBehaviour
     [SerializeField]
     private PaddleScript paddle1, paddle2;
 
+    [SerializeField]
+    private Image screenFade;
+
     private void OnEnable()
     {
         player1ScoreTrigger.OnScore += Player1Score;
         player2ScoreTrigger.OnScore += Player2Score;
-        StartRoutine().Forget();
+        StartRoutine();
+        FadeIn().Forget();
     }
 
     private void OnDisable()
@@ -38,9 +44,18 @@ public class TitleBattleManager: MonoBehaviour
 
     private CancellationToken DestroyToken => this.GetCancellationTokenOnDestroy();
 
-    private async UniTask StartRoutine()
+    private void StartRoutine()
     {
         ballScript.StartRandom();
+    }
+
+    private async UniTask FadeIn()
+    {
+        screenFade.gameObject.SetActive(true);
+        screenFade.color = screenFade.color.WithAlpha(1f);
+        screenFade.raycastTarget = false;
+        await screenFade.DOFade(0f, 1).ToUniTask(cancellationToken: DestroyToken);
+        screenFade.gameObject.SetActive(false);
     }
 
     private void Player1Score(RaycastHit2D hit2D)

@@ -18,12 +18,23 @@ public class PaddleScript : MonoBehaviour, IBallTrigger
 
     [SerializeField]
     private Collider2D coll2D;
+    
+    [Header("Effects")]
 
     [SerializeField]
     private ParticleSystem chargeSystem;
 
     [SerializeField]
     private ParticleSystem chargeHitSystem;
+
+    [SerializeField]
+    private AudioSource audioSource;
+
+    [SerializeField]
+    private AudioClip normalHitSFX;
+
+    [SerializeField]
+    private AudioClip chargeHitSFX;
     
     [Header("Paddle Parameters")]
     [SerializeField]
@@ -57,12 +68,46 @@ public class PaddleScript : MonoBehaviour, IBallTrigger
     public event Action<float> OnChargeChange;
     public event Action<bool> OnReadyFireChange;
 
+    public event Action OnNormalHit;
+    public event Action OnChargeHit;
+
     private Transform _transform;
 
     // Start is called before the first frame update
     void Awake()
     {
         _transform = transform;
+    }
+
+    private void OnEnable()
+    {
+        // This can be brought into a separate script if needed
+        OnNormalHit += PlayNormalHitSFX;
+        OnChargeHit += PlayChargeFX;
+        OnChargeHit += PlayChargeHitSFX;
+    }
+
+    private void OnDisable()
+    {
+        OnNormalHit -= PlayNormalHitSFX;
+        OnChargeHit -= PlayChargeFX;
+        OnChargeHit -= PlayChargeHitSFX;
+    }
+
+    private void PlayChargeFX()
+    {
+        chargeHitSystem.Simulate(0);
+        chargeHitSystem.Play();
+    }
+
+    private void PlayNormalHitSFX()
+    {
+        audioSource.PlayOneShot(normalHitSFX);
+    }
+
+    private void PlayChargeHitSFX()
+    {
+        audioSource.PlayOneShot(chargeHitSFX);
     }
 
     private void FixedUpdate()
@@ -93,9 +138,9 @@ public class PaddleScript : MonoBehaviour, IBallTrigger
         {
             ballScript.AddMultiplier(speedIncrease.Value);
             Charge--;
-            chargeHitSystem.Simulate(0);
-            chargeHitSystem.Play();
             SetReadyToFire(false);
+            
+            OnChargeHit?.Invoke();
         }
         else
         {
@@ -105,6 +150,8 @@ public class PaddleScript : MonoBehaviour, IBallTrigger
                 .AtMost(maxCharges.Value);
             
             ballScript.AddMultiplier(speedDecrease.Value);
+            
+            OnNormalHit?.Invoke();
         }
         
         // Place ball at top of paddle
